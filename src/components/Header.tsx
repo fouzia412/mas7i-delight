@@ -1,20 +1,23 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Phone } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const navLinks = [
-  { name: 'Home', href: '#home' },
-  { name: 'About', href: '#about' },
-  { name: 'Services', href: '#services' },
-  { name: 'Process', href: '#process' },
-  { name: 'Why Us', href: '#why-us' },
-  { name: 'FAQs', href: '#faq' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'Home', href: '/', isPage: true },
+  { name: 'About', href: '/about', isPage: true },
+  { name: 'Services', href: '/services', isPage: true },
+  { name: 'Process', href: '/#process', isPage: false },
+  { name: 'Why Us', href: '/#why-us', isPage: false },
+  { name: 'FAQs', href: '/#faq', isPage: false },
+  { name: 'Contact', href: '/contact', isPage: true },
 ];
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,12 +27,34 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+  const handleNavClick = (href: string, isPage: boolean) => {
     setIsMobileMenuOpen(false);
+    
+    if (isPage) {
+      // Navigate to page
+      return;
+    }
+    
+    // Handle hash navigation
+    if (href.startsWith('/#')) {
+      const hash = href.substring(1);
+      if (location.pathname === '/') {
+        // Already on home page, just scroll
+        const element = document.querySelector(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        // Navigate to home page first, then scroll
+        navigate('/');
+        setTimeout(() => {
+          const element = document.querySelector(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+      }
+    }
   };
 
   return (
@@ -43,39 +68,55 @@ const Header = () => {
       <div className="container-custom">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <motion.a
-            href="#home"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection('#home');
-            }}
-            className="flex items-center gap-1 text-2xl font-bold text-text-light"
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            MAS7<span className="text-primary">i</span>
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse-glow" />
-          </motion.a>
+            <Link
+              to="/"
+              className="flex items-center gap-1 text-2xl font-bold text-text-light"
+            >
+              MAS7<span className="text-primary">i</span>
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse-glow" />
+            </Link>
+          </motion.div>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link, index) => (
-              <motion.a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToSection(link.href);
-                }}
-                className="text-text-light/80 hover:text-primary transition-colors duration-300 text-sm font-medium relative group"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-              >
-                {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
-              </motion.a>
+              link.isPage ? (
+                <motion.div
+                  key={link.name}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.05 }}
+                >
+                  <Link
+                    to={link.href}
+                    className={`text-sm font-medium relative group transition-colors duration-300 ${
+                      location.pathname === link.href 
+                        ? 'text-primary' 
+                        : 'text-text-light/80 hover:text-primary'
+                    }`}
+                  >
+                    {link.name}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+                  </Link>
+                </motion.div>
+              ) : (
+                <motion.button
+                  key={link.name}
+                  onClick={() => handleNavClick(link.href, link.isPage)}
+                  className="text-text-light/80 hover:text-primary transition-colors duration-300 text-sm font-medium relative group"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.05 }}
+                >
+                  {link.name}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+                </motion.button>
+              )
             ))}
           </nav>
 
@@ -91,17 +132,18 @@ const Header = () => {
               <Phone className="w-4 h-4" />
               +91 9121861192
             </motion.a>
-            <motion.button
-              onClick={() => scrollToSection('#contact')}
-              className="btn-primary text-sm"
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
             >
-              Get a Quote
-            </motion.button>
+              <Link
+                to="/contact"
+                className="btn-primary text-sm inline-block"
+              >
+                Get a Quote
+              </Link>
+            </motion.div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -129,20 +171,37 @@ const Header = () => {
           >
             <nav className="container-custom py-6 flex flex-col gap-4">
               {navLinks.map((link, index) => (
-                <motion.a
-                  key={link.name}
-                  href={link.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToSection(link.href);
-                  }}
-                  className="text-text-light/80 hover:text-primary transition-colors py-2 text-lg font-medium"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                >
-                  {link.name}
-                </motion.a>
+                link.isPage ? (
+                  <motion.div
+                    key={link.name}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
+                    <Link
+                      to={link.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`block py-2 text-lg font-medium transition-colors ${
+                        location.pathname === link.href 
+                          ? 'text-primary' 
+                          : 'text-text-light/80 hover:text-primary'
+                      }`}
+                    >
+                      {link.name}
+                    </Link>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    key={link.name}
+                    onClick={() => handleNavClick(link.href, link.isPage)}
+                    className="text-text-light/80 hover:text-primary transition-colors py-2 text-lg font-medium text-left"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
+                    {link.name}
+                  </motion.button>
+                )
               ))}
               <div className="pt-4 border-t border-white/10 flex flex-col gap-4">
                 <a
@@ -152,12 +211,13 @@ const Header = () => {
                   <Phone className="w-4 h-4" />
                   +91 9121861192
                 </a>
-                <button
-                  onClick={() => scrollToSection('#contact')}
+                <Link
+                  to="/contact"
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className="btn-primary w-full text-center"
                 >
                   Get a Quote
-                </button>
+                </Link>
               </div>
             </nav>
           </motion.div>
