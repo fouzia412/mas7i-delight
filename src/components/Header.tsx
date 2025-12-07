@@ -7,9 +7,10 @@ const navLinks = [
   { name: 'Home', href: '/', isPage: true },
   { name: 'About', href: '/about', isPage: true },
   { name: 'Services', href: '/services', isPage: true },
-  { name: 'Process', href: '/#process', isPage: false },
-  { name: 'Why Us', href: '/#why-us', isPage: false },
-  { name: 'FAQs', href: '/#faq', isPage: false },
+  { name: 'Process', href: '/process', isPage: true },
+  { name: 'Why Us', href: '/why-us', isPage: true },
+  { name: 'Blogs', href: '/blogs', isPage: true },
+  { name: 'FAQs', href: '/faqs', isPage: true },
   { name: 'Contact', href: '/contact', isPage: true },
 ];
 
